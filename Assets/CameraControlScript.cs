@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
 public class CameraControlScript : MonoBehaviour {
@@ -18,25 +18,26 @@ public class CameraControlScript : MonoBehaviour {
 	
 	void Update()
 	{
-		if (!(Input.GetMouseButton(0) || Input.GetMouseButton(1)))
+		float scroll = Input.GetAxis ("Mouse ScrollWheel");
+
+		if (!(Input.GetMouseButton(0) || Input.GetMouseButton(1) || Input.GetMouseButton(2)) && (scroll == 0))
 			return;
 		
 		float deltaX = Input.GetAxis("Mouse X") * sensitivityX;
 		float deltaY = Input.GetAxis("Mouse Y") * sensitivityY;
 
-		if (Input.GetMouseButton(2)) {
-			Strafe(-deltaX);
+
+		if (Input.GetMouseButton (2)) {
+			Strafe (-deltaX * 0.5f);
+			ChangeHeight (-deltaY);
+		} else if (Input.GetMouseButton (0) && Input.GetMouseButton (1)) {
+			MoveForwards (deltaY);
 			ChangeHeight(-deltaY);
-		}
-		else if (Input.GetMouseButton(0) && Input.GetMouseButton(1))
-		{
-			MoveForwards(deltaY);
-			//ChangeHeight(-deltaY);
-		}
-		else if( Input.GetMouseButton(1))
-		{
-			ChangeHeading(deltaX);
-			ChangePitch(-deltaY);
+		} else if (Input.GetMouseButton (1)) {
+			ChangeHeading (deltaX);
+			ChangePitch (-deltaY);
+		} else if (scroll != 0) {
+			MoveForwards (scroll * 3 * sensitivityY);
 		}
 	}
 	

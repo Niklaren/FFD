@@ -1,10 +1,13 @@
 fileFormatVersion: 2
 guid: 21ad5302a1b43234680f5876b7deec55
-timeCreated: 1429214767
+timeCreated: 1429819220
 licenseType: Free
 MonoImporter:
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - mesh: {instanceID: 0}
+  - CPNode: {fileID: 191984, guid: 8d912ad8f77a42c4aaa268d0bef42ca8, type: 2}
+  - connector: {fileID: 151320, guid: 5819259fdfccb094bb57dd7e88661bba, type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

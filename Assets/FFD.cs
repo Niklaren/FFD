@@ -6,19 +6,27 @@ public class FFD : MonoBehaviour {
 
 	public Mesh mesh;
 	public List<Vector3> meshCoordinates;
+	public List<GameObject> connectors;
 	public List<GameObject> controlPoints;
 	
 	public Vector3 p0;
 	public Vector3 pN;
 	public float S,T,U;
+
+	int CPs_s = 3;
+	int CPs_t = 4;
+	int CPs_u = 4;
 	
 	public GameObject CPNode;
+	public GameObject connector;
 	
 	// Use this for initialization
 	void Start () {
 		InitMesh ();
 		
 		InitCPs ();
+
+		InitConnectors ();
 	}
 	
 	// Update is called once per frame
@@ -32,6 +40,7 @@ public class FFD : MonoBehaviour {
 		
 		if (mesh.vertices != verts) {
 			mesh.vertices = verts;
+			MoveConnectors();
 			//	mesh.RecalculateBounds();
 			//	mesh.RecalculateNormals();
 		}
@@ -87,9 +96,9 @@ public class FFD : MonoBehaviour {
 		
 		//P = p0 + (i/l)S + (j/m)T + (k/n)U;
 
-		for (x = 0.0f; x <= 1.0f; x += 1.0f/2.0f) {
-			for (y = 0.0f; y <= 1.0f; y += 1.0f/3.0f) {
-				for (z = 0.0f; z <= 1.0f; z += 1.0f/3.0f,i++) {
+		for (x = 0.0f; x < 1.0f; x += 1.0f/CPs_s) {
+			for (y = 0.0f; y < 1.0f; y += 1.0f/CPs_t) {
+				for (z = 0.0f; z < 1.0f; z += 1.0f/CPs_u,i++) {
 					GameObject Node = Instantiate(CPNode, transform.position, Quaternion.identity) as GameObject;
 					Node.transform.parent = transform;
 					Node.transform.localPosition = (p0 + new Vector3(x*S,y*T,z*U)); // 
@@ -103,6 +112,88 @@ public class FFD : MonoBehaviour {
 				for (int k = 0; k < 4; k++) {
 					//Debug.Log( k + (j*4) + (i*4*4));
 					//Debug.Log( controlPoints[k + (j*4) + (i*4*4) ].transform.position);
+				}
+			}
+		}
+	}
+
+	void InitConnectors(){
+		int i, j, k;
+		for (i = 0; i < CPs_s-1; i++) {
+			for (j = 0; j < CPs_t; j++) {
+				for (k = 0; k < CPs_u; k++) {
+					GameObject connection = Instantiate (connector, transform.position, Quaternion.identity) as GameObject;
+					connection.transform.parent = transform;
+					LineRenderer lr = connection.GetComponent<LineRenderer> ();
+					lr.SetVertexCount (2);
+					lr.SetWidth (0.01f, 0.01f);
+					lr.SetPosition (0, controlPoints [k + (j*4) + (i*(CPs_t*CPs_u)) ].transform.position);
+					lr.SetPosition (1, controlPoints [k + (j*4) + ((i+1)*(CPs_t*CPs_u)) ].transform.position);
+					connectors.Add (connection);
+				}
+			}
+		}
+		
+		for (i = 0; i < CPs_s; i++) {
+			for (j = 0; j < CPs_t-1; j++) {
+				for (k = 0; k < CPs_u; k++) {
+					GameObject connection = Instantiate (connector, transform.position, Quaternion.identity) as GameObject;
+					connection.transform.parent = transform;
+					LineRenderer lr = connection.GetComponent<LineRenderer> ();
+					lr.SetVertexCount (2);
+					lr.SetWidth (0.01f, 0.01f);
+					lr.SetPosition (0, controlPoints [k + (j*4) + (i*(CPs_t*CPs_u)) ].transform.position);
+					lr.SetPosition (1, controlPoints [k + ((j+1)*4) + (i*(CPs_t*CPs_u)) ].transform.position);
+					connectors.Add (connection);
+				}
+			}
+		}
+
+		for (i = 0; i < CPs_s; i++) {
+			for (j = 0; j < CPs_t; j++) {
+				for (k = 0; k < CPs_u-1; k++) {
+					GameObject connection = Instantiate (connector, transform.position, Quaternion.identity) as GameObject;
+					connection.transform.parent = transform;
+					LineRenderer lr = connection.GetComponent<LineRenderer> ();
+					lr.SetVertexCount (2);
+					lr.SetWidth (0.01f, 0.01f);
+					lr.SetPosition (0, controlPoints [k + (j*4) + (i*(CPs_t*CPs_u)) ].transform.position);
+					lr.SetPosition (1, controlPoints [(k+1) + (j*4) + (i*(CPs_t*CPs_u)) ].transform.position);
+					connectors.Add (connection);
+				}
+			}
+		}
+	}
+	
+	void MoveConnectors(){
+		int i, j, k;
+		for (i = 0; i < CPs_s-1; i++) {
+			for (j = 0; j < CPs_t; j++) {
+				for (k = 0; k < CPs_u; k++) {
+					LineRenderer lr = connectors[k + (j*4) + (i*(CPs_t*CPs_u))].GetComponent<LineRenderer>();
+					lr.SetPosition(0,controlPoints[k + (j*4) + (i*(CPs_t*CPs_u))].transform.position);
+					lr.SetPosition(1,controlPoints[k + (j*4) + ((i+1)*(CPs_t*CPs_u))].transform.position);
+				}
+			}
+		}
+		
+		for (i = 0; i < CPs_s; i++) {
+			for (j = 0; j < CPs_t-1; j++) {
+				for (k = 0; k < CPs_u; k++) {
+					LineRenderer lr = connectors [k + (j*4) + (i*(CPs_s*CPs_u)) + ((CPs_s-1)*CPs_t*CPs_u)].GetComponent<LineRenderer> ();
+					lr.SetPosition (0, controlPoints [k + (j*4) + (i*(CPs_t*CPs_u))].transform.position);
+					lr.SetPosition (1, controlPoints [k + ((j+1)*4) + (i*(CPs_t*CPs_u))].transform.position);
+				}
+			}
+		}
+
+		for (i = 0; i < CPs_s; i++) {
+			for (j = 0; j < CPs_t; j++) {
+				for (k = 0; k < CPs_u-1; k++) {
+					//(k + (j* inner loop) + (i * outer loop) * (previousdistance)
+					LineRenderer lr = connectors [(k + (j*(CPs_u-1)) + (i*(CPs_s*CPs_t)) + ((CPs_s-1)*CPs_t*CPs_u) + (CPs_s*(CPs_t-1)*CPs_u))].GetComponent<LineRenderer> ();
+					lr.SetPosition (0, controlPoints [k + (j*4) + (i*(CPs_t*CPs_u))].transform.position);
+					lr.SetPosition (1, controlPoints [(k+1) + (j*4) + (i*(CPs_t*CPs_u))].transform.position);
 				}
 			}
 		}
@@ -122,14 +213,15 @@ public class FFD : MonoBehaviour {
 		Bs[2] = s * s;
 		
 		Bt[0] = (1.0f - t) * (1.0f - t) * (1.0f - t);
-		Bt[1] = 3.0f * t * (1 - t) * (1.0f - t);
+		Bt[1] = 3.0f * t * (1.0f - t) * (1.0f - t);
 		Bt[2] = 3.0f * t * t * (1.0f - t);
 		Bt[3] = t * t * t;
 		
 		Bu[0] = (1.0f - u) * (1.0f - u) * (1.0f - u);
-		Bu[1] = 3.0f * u * (1 - u) * (1.0f - u);
+		Bu[1] = 3.0f * u * (1.0f - u) * (1.0f - u);
 		Bu[2] = 3.0f * u * u * (1.0f - u);
 		Bu[3] = u * u * u;
+
 
 		Vector3 point = new Vector3 (0,0,0);
 		
@@ -140,7 +232,6 @@ public class FFD : MonoBehaviour {
 				}
 			}
 		}
-		//Debug.Log(gleeb);
 		
 		return point;
 	}

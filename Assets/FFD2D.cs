@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -8,13 +8,25 @@ public class FFD2D : MonoBehaviour {
 
 	public float coefficients;
 	public List<GameObject> controlPoints;
+	//public List<GameObject[,] > controlPoints = new List<GameObject[,]>(); 
+	public List<GameObject> connectors;
 	public List<Vector3> meshCoordinates;
+	//public List <LineRenderer> connectors;
 	
 	public Vector3 p0;
 	public Vector3 pN;
 	public float S,T,U;
 	
 	public GameObject CPNode;
+	public GameObject connector;
+
+	int CPs_s = 4;
+	//float CPs_t = 1;
+	int CPs_u = 4;
+
+	//List <float> [] Bs;
+	//List <float> [] Bt;
+	//List <float> [] Bu;
 	
 	// Use this for initialization
 	void Start () {
@@ -22,6 +34,7 @@ public class FFD2D : MonoBehaviour {
 
 		InitCPs ();
 
+		InitConnectors ();
 		//foreach (Vector3 vertex in mesh.vertices) {
 		//	glarbnu(vertex);
 		//}
@@ -29,10 +42,6 @@ public class FFD2D : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-
-		//foreach (Vector3 vertex in mesh.vertices) {
-			//glarbnu(vertex);
-
 
 		Vector3 [] verts = new Vector3[mesh.vertexCount]; 
 		verts = mesh.vertices;
@@ -51,6 +60,7 @@ public class FFD2D : MonoBehaviour {
 
 		if (mesh.vertices != verts) {
 			mesh.vertices = verts;
+			MoveConnectors();
 		//	mesh.RecalculateBounds();
 		//	mesh.RecalculateNormals();
 		}
@@ -79,29 +89,84 @@ public class FFD2D : MonoBehaviour {
 	}
 
 	void CreateBernsteinCoefficients(){
-		
+
 	}
 	
 	void InitCPs(){
 		
-		int i = 0;
-		float x,z;
-		
+		int i =0, j = 0;
+		float s,/*t,*/u;
+
 		//P = p0 + (i/l)S + (j/m)T + (k/n)U;
-		
-		for (z = 0.0f; z <= 1.0f; z += 1.0f/3.0f) {
-			for (x = 0.0f; x <= 1.0f; x += 1.0f/3.0f,i++) {
+
+		for (u = 0.0f; u <= 1.0f; u += 1.0f/(CPs_u-1)) {
+			for (s = 0.0f; s <= 1.0f; s += 1.0f/(CPs_s-1),i++) {
 				GameObject Node = Instantiate(CPNode, transform.position, Quaternion.identity) as GameObject;
 				Node.transform.parent = transform;
-				Node.transform.localPosition = (p0 + new Vector3(x*S,0,z*U)); // 
+				Node.transform.localPosition = (p0 + new Vector3(s*S,0,u*U)); // 
 				controlPoints.Add(Node);
 				//controlPoints.Add(p0 + new Vector3(x*S,0,z*U));
+			
 			}
 		}
 
 		for (i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++) {
+			for (j = 0; j < 4; j++) {
 				//Debug.Log( controlPoints[j + (i*4)]);
+			}
+		}
+
+	}
+
+	void InitConnectors(){
+		int i, j;
+		for (i = 0; i < CPs_u-1; i++) {
+			for (j = 0; j < CPs_s; j++) {
+				GameObject connection = Instantiate (connector, transform.position, Quaternion.identity) as GameObject;
+				connection.transform.parent = transform;
+				LineRenderer lr = connection.GetComponent<LineRenderer> ();
+				lr.SetVertexCount (2);
+				lr.SetWidth (0.01f, 0.01f);
+				lr.SetPosition (0, controlPoints [j + (i * (CPs_u))].transform.position);
+				lr.SetPosition (1, controlPoints [j + ((i+1) * (CPs_u))].transform.position);
+				connectors.Add (connection);
+			}
+		}
+		
+		for (i = 0; i < CPs_u; i++) {
+			for (j = 0; j < CPs_s-1; j++) {
+				GameObject connection = Instantiate(connector, transform.position, Quaternion.identity) as GameObject;
+				connection.transform.parent = transform;
+				LineRenderer lr = connection.GetComponent<LineRenderer>();
+				lr.SetVertexCount(2);
+				lr.SetWidth(0.01f,0.01f);
+				lr.SetPosition(0,controlPoints[j + (i*(CPs_u))].transform.position);
+				lr.SetPosition(1,controlPoints[j+1 + ((i+0)*(CPs_u))].transform.position);
+				connectors.Add(connection);
+			}
+		}
+	}
+
+	void MoveConnectors(){
+		int i, j;
+
+		for (i = 0; i < CPs_s-1; i++) {
+			for (j = 0; j < CPs_u; j++) {
+				//if(i<(CPs_u-1)){
+					LineRenderer lr = connectors[j + (i*CPs_u)].GetComponent<LineRenderer>();
+					lr.SetPosition(0,controlPoints[j + (i*(CPs_u))].transform.position);
+					lr.SetPosition(1,controlPoints[j+0 + ((i+1)*(CPs_u))].transform.position);
+				//}
+			}
+		}
+
+		for (i = 0; i < CPs_s; i++) {
+			for (j = 0; j < CPs_u-1; j++) {
+				//if(j<(CPs_s-1)){
+					LineRenderer lr = connectors[i + (j*CPs_u) + ((CPs_s-1)*(CPs_u))].GetComponent<LineRenderer>();
+					lr.SetPosition(0,controlPoints[j + (i*(CPs_u))].transform.position);
+					lr.SetPosition(1,controlPoints[j+1 + ((i)*(CPs_u))].transform.position);
+				//}
 			}
 		}
 	}
