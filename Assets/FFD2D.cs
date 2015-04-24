@@ -191,7 +191,7 @@ public class FFD2D : MonoBehaviour {
 		Bu[2] = 3.0f * u * u * (1.0f - u);
 		Bu[3] = u * u * u;
 		
-		//Debug.Log(Bs[0]+"|"+Bs[1]+"|"+Bs[2]+"|"+Bs[3]);
+		Debug.Log(Bs[0]+"|"+Bs[1]+"|"+Bs[2]+"|"+Bs[3]);
 		//Debug.Log(Bu[0]+"|"+Bu[1]+"|"+Bu[2]+"|"+Bu[3]);
 		
 		Vector3 gleeb = new Vector3 (0,0,0);
