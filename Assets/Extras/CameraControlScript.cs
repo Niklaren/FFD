@@ -2,77 +2,67 @@ using UnityEngine;
 using System.Collections;
 
 public class CameraControlScript : MonoBehaviour {
-	
-	public float sensitivityX = 2F;
-	public float sensitivityY = 2F;
-	
-	public float mHdg = 0F;
-	public float mPitch = 45F;
 
-	public Transform mTarget;
-	
+	public float Yaw = 0F;
+	public float Pitch = 45F;
+
 	void Start()
 	{
-		// owt?
+
 	}
 	
 	void Update()
 	{
+		if (Input.GetKeyDown(KeyCode.Escape))
+			Application.Quit();
+
 		float scroll = Input.GetAxis ("Mouse ScrollWheel");
 
 		if (!(Input.GetMouseButton(0) || Input.GetMouseButton(1) || Input.GetMouseButton(2)) && (scroll == 0))
 			return;
 		
-		float deltaX = Input.GetAxis("Mouse X") * sensitivityX;
-		float deltaY = Input.GetAxis("Mouse Y") * sensitivityY;
+		float deltaX = Input.GetAxis("Mouse X");
+		float deltaY = Input.GetAxis ("Mouse Y");
 
-
-		if (Input.GetMouseButton (2)) {
-			Strafe (-deltaX * 0.5f);
-			ChangeHeight (-deltaY);
-		} else if (Input.GetMouseButton (0) && Input.GetMouseButton (1)) {
-			MoveForwards (deltaY);
-			ChangeHeight(-deltaY);
-		} else if (Input.GetMouseButton (1)) {
-			ChangeHeading (deltaX);
+		if (Input.GetMouseButton (1)) {
+			ChangeYaw (deltaX);
 			ChangePitch (-deltaY);
 		} else if (scroll != 0) {
-			MoveForwards (scroll * 3 * sensitivityY);
+			MoveForwards (scroll * 4);
+		}
+		else if (Input.GetMouseButton (2)) {
+			Strafe (-deltaX * 0.5f);
+			ChangeHeight (-deltaY);
 		}
 	}
 	
-	void MoveForwards(float aVal)
+	void MoveForwards(float f)
 	{
-		Vector3 fwd = transform.forward;
-		fwd.y = 0;
-		fwd.Normalize();
-		transform.position += aVal * fwd;
+		transform.position += (f * transform.forward);
 	}
 	
-	void Strafe(float aVal)
+	void Strafe(float s)
 	{
-		transform.position += aVal * transform.right;
+		transform.position += (s * transform.right);
 	}
 	
-	void ChangeHeight(float aVal)
+	void ChangeHeight(float h)
 	{
-		transform.position += aVal * Vector3.up;
+		transform.position += (h * Vector3.up);
 	}
 	
-	void ChangeHeading(float aVal)
+	void ChangeYaw(float y)
 	{
-		mHdg += aVal;
-		//mHdg =  transform.rotation.y + aVal;
-		WrapAngle(ref mHdg);
-		transform.localEulerAngles = new Vector3(mPitch, mHdg, 0);
+		Yaw += y;
+		WrapAngle(ref Yaw);
+		transform.localEulerAngles = new Vector3(Pitch, Yaw, 0);
 	}
 	
-	void ChangePitch(float aVal)
+	void ChangePitch(float p)
 	{
-		mPitch += aVal;
-		//mPitch = transform.rotation.y + aVal;
-		WrapAngle(ref mPitch);
-		transform.localEulerAngles = new Vector3(mPitch, mHdg, 0);
+		Pitch += p;
+		WrapAngle(ref Pitch);
+		transform.localEulerAngles = new Vector3(Pitch, Yaw, 0);
 	}
 	
 	public static void WrapAngle(ref float angle)
